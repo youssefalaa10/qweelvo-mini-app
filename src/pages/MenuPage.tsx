@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Plus, ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { setActiveCategory, Product } from '@/features/menu/menuSlice';
 import { addItem, selectCartTotal, selectCartItemCount } from '@/features/cart/cartSlice';
@@ -22,18 +23,27 @@ const MenuPage = () => {
   const filteredProducts = products.filter((p) => p.categoryId === activeCategory);
 
   const handleQuickAdd = (product: Product) => {
-    if (product.modifierGroups.length > 0) {
-      navigate(`/product/${product.id}`);
-      return;
-    }
+    // Pick first options for required groups
+    const defaultModifiers = product.modifierGroups
+      .filter((mg) => mg.required)
+      .map((mg) => {
+        const firstOpt = mg.options[0];
+        return { name: firstOpt.name, nameAr: firstOpt.nameAr, price: firstOpt.price };
+      });
+
     dispatch(addItem({
       productId: product.id,
       name: product.name,
       nameAr: product.nameAr,
       price: product.price,
       quantity: 1,
-      modifiers: [],
+      modifiers: defaultModifiers,
     }));
+
+    toast.success(isAr ? `تم إضافة ${product.nameAr} للسلة` : `Added ${product.name} to cart`, {
+      duration: 1500,
+      position: 'top-center',
+    });
   };
 
   return (

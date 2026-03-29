@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { CreditCard, Smartphone, MapPin, Truck, Store, Minus, Plus, Trash2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import {
@@ -25,7 +26,7 @@ const CheckoutPage = () => {
     && (checkout.orderType === 'pickup' || checkout.address.trim());
 
   const handlePay = async () => {
-    if (!isValid || checkout.status === 'processing') return;
+    if (checkout.status === 'processing') return;
     dispatch(setCheckoutStatus('processing'));
 
     // Simulate payment
@@ -34,8 +35,9 @@ const CheckoutPage = () => {
       dispatch(setOrderNumber(orderNum));
       dispatch(setCheckoutStatus('success'));
       dispatch(clearCart());
+      toast.success(isAr ? 'تم تأكيد طلبك بنجاح' : 'Order placed successfully');
       navigate('/success');
-    }, 2000);
+    }, 500);
   };
 
   return (
@@ -196,7 +198,7 @@ const CheckoutPage = () => {
           </button>
           <button
             onClick={handlePay}
-            disabled={!isValid || checkout.status === 'processing'}
+            disabled={checkout.status === 'processing'}
             className="w-full bg-primary text-primary-foreground rounded-xl px-5 py-3.5 font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('checkout.payNow')} • {total} {t('common.currency')}

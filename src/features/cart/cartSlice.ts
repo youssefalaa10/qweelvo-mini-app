@@ -23,8 +23,27 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addItem(state, action: PayloadAction<Omit<CartItem, 'id'>>) {
-      const id = `${action.payload.productId}-${Date.now()}`;
-      state.items.push({ ...action.payload, id });
+      const { productId, modifiers } = action.payload;
+      
+      const existingItem = state.items.find((item) => {
+        if (item.productId !== productId) return false;
+        
+        // Compare modifiers
+        if (item.modifiers.length !== modifiers.length) return false;
+        
+        // Sort and stringify modifiers for exact comparison
+        const existingMods = JSON.stringify([...item.modifiers].sort((a,b) => a.name.localeCompare(b.name)));
+        const newMods = JSON.stringify([...modifiers].sort((a,b) => a.name.localeCompare(b.name)));
+        
+        return existingMods === newMods;
+      });
+
+      if (existingItem) {
+        existingItem.quantity += action.payload.quantity;
+      } else {
+        const id = `${productId}-${Date.now()}`;
+        state.items.push({ ...action.payload, id });
+      }
     },
     removeItem(state, action: PayloadAction<string>) {
       state.items = state.items.filter((i) => i.id !== action.payload);

@@ -70,5 +70,12 @@
     "close": "Close",
     "error": "Something went wrong",
     "loading": "Loading..."
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "content": "By using Qweelvo Orders, you agree to our privacy policy and terms of service for our smart order management system.",
+    "accept": "Agree & Continue",
+    "decline": "Decline",
+    "declinedMessage": "Sorry, we can't continue or service you without accepting the terms."
   }
 }

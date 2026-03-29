@@ -15,6 +15,7 @@ import ProductPage from "./pages/ProductPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import SuccessPage from "./pages/SuccessPage";
 import NotFound from "./pages/NotFound";
+import TermsModal from "./shared/components/TermsModal";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner />
+        <TermsModal />
         <BrowserRouter>
           <AnimatePresence mode="wait">
             <Routes>
