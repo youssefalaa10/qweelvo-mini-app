@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "طلبات كويلفو"
+  },
+  "entry": {
+    "loading": "جاري تحميل جلستك...",
+    "invalid": "جلسة غير صالحة أو منتهية",
+    "retry": "يرجى طلب رابط جديد عبر واتساب"
+  },
+  "branch": {
+    "title": "اختر الفرع",
+    "subtitle": "اختر أقرب موقع لك",
+    "open": "مفتوح",
+    "closed": "مغلق",
+    "select": "اختر"
+  },
+  "menu": {
+    "title": "القائمة",
+    "addToCart": "أضف",
+    "viewCart": "متابعة الدفع",
+    "items": "عناصر",
+    "searchPlaceholder": "ابحث في القائمة..."
+  },
+  "product": {
+    "description": "الوصف",
+    "modifiers": "تخصيص",
+    "addToCart": "أضف إلى السلة",
+    "required": "مطلوب",
+    "optional": "اختياري"
+  },
+  "cart": {
+    "title": "سلتك",
+    "empty": "سلتك فارغة",
+    "emptyHint": "تصفح القائمة وأضف العناصر",
+    "goToMenu": "تصفح القائمة",
+    "subtotal": "المجموع الفرعي",
+    "total": "الإجمالي",
+    "checkout": "متابعة الدفع",
+    "remove": "إزالة"
+  },
+  "checkout": {
+    "title": "الدفع",
+    "userInfo": "معلوماتك",
+    "name": "الاسم الكامل",
+    "namePlaceholder": "أدخل اسمك",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "أدخل رقم هاتفك",
+    "orderType": "نوع الطلب",
+    "delivery": "توصيل",
+    "pickup": "استلام",
+    "address": "عنوان التوصيل",
+    "addressPlaceholder": "أدخل عنوانك",
+    "payment": "طريقة الدفع",
+    "applePay": "Apple Pay",
+    "card": "بطاقة ائتمان",
+    "payNow": "ادفع الآن",
+    "processing": "جاري المعالجة...",
+    "orderSummary": "ملخص الطلب"
+  },
+  "success": {
+    "title": "تم الطلب!",
+    "message": "تم تأكيد طلبك",
+    "orderNumber": "رقم الطلب",
+    "whatsapp": "ستتلقى التحديثات عبر واتساب",
+    "newOrder": "طلب جديد"
+  },
+  "common": {
+    "currency": "ر.س",
+    "back": "رجوع",
+    "close": "إغلاق",
+    "error": "حدث خطأ ما",
+    "loading": "جاري التحميل..."
+  }
+}

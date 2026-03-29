@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "Qweelvo Orders"
+  },
+  "entry": {
+    "loading": "Loading your session...",
+    "invalid": "Invalid or expired session",
+    "retry": "Please request a new link via WhatsApp"
+  },
+  "branch": {
+    "title": "Select a Branch",
+    "subtitle": "Choose your nearest location",
+    "open": "Open",
+    "closed": "Closed",
+    "select": "Select"
+  },
+  "menu": {
+    "title": "Menu",
+    "addToCart": "Add",
+    "viewCart": "Continue to Checkout",
+    "items": "items",
+    "searchPlaceholder": "Search menu..."
+  },
+  "product": {
+    "description": "Description",
+    "modifiers": "Customize",
+    "addToCart": "Add to Cart",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty",
+    "emptyHint": "Browse the menu and add items",
+    "goToMenu": "Browse Menu",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "checkout": "Continue to Checkout",
+    "remove": "Remove"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "userInfo": "Your Information",
+    "name": "Full Name",
+    "namePlaceholder": "Enter your name",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Enter phone number",
+    "orderType": "Order Type",
+    "delivery": "Delivery",
+    "pickup": "Pickup",
+    "address": "Delivery Address",
+    "addressPlaceholder": "Enter your address",
+    "payment": "Payment Method",
+    "applePay": "Apple Pay",
+    "card": "Credit Card",
+    "payNow": "Pay Now",
+    "processing": "Processing...",
+    "orderSummary": "Order Summary"
+  },
+  "success": {
+    "title": "Order Placed!",
+    "message": "Your order has been confirmed",
+    "orderNumber": "Order Number",
+    "whatsapp": "You'll receive updates via WhatsApp",
+    "newOrder": "Place New Order"
+  },
+  "common": {
+    "currency": "SAR",
+    "back": "Back",
+    "close": "Close",
+    "error": "Something went wrong",
+    "loading": "Loading..."
+  }
+}
