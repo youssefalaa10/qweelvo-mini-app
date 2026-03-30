@@ -5,7 +5,9 @@
   "entry": {
     "loading": "Loading your session...",
     "invalid": "Invalid or expired session",
-    "retry": "Please request a new link via WhatsApp"
+    "retry": "Please request a new link via WhatsApp",
+    "incomplete": "Incomplete Link",
+    "incompleteHint": "Please enter using the specific order link sent to you via WhatsApp"
   },
   "branch": {
     "title": "Select a Branch",

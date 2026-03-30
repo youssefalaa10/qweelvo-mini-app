@@ -15,6 +15,7 @@ import ProductPage from "./pages/ProductPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import SuccessPage from "./pages/SuccessPage";
 import NotFound from "./pages/NotFound";
+import InvalidLinkPage from "./pages/InvalidLinkPage";
 import TermsModal from "./shared/components/TermsModal";
 
 const queryClient = new QueryClient();
@@ -28,7 +29,7 @@ const App = () => (
         <BrowserRouter>
           <AnimatePresence mode="wait">
             <Routes>
-              <Route path="/" element={<Navigate to="/brand_1/session/aa92d810-b6e4-473a-96c8-d365aae04a15" replace />} />
+              <Route path="/" element={<InvalidLinkPage />} />
               <Route path="/session/:token" element={<EntryPage />} />
               <Route path="/:brand/session/:token" element={<EntryPage />} />
               <Route path="/branches" element={<BranchPage />} />
