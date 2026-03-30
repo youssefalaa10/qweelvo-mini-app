@@ -61,7 +61,8 @@ const BranchPage = () => {
   };
 
   const handleSelect = async (branch: Branch) => {
-    if (!branch.isOpen) return;
+    // If isOpen is explicitly false, return
+    if (branch.isOpen === false) return;
     
     // Optimistically update
     dispatch(selectBranch(branch));
@@ -71,13 +72,25 @@ const BranchPage = () => {
       
       if (token) {
         try {
-          const cartItems = await cartService.getCart(token);
-          if (cartItems && cartItems.length > 0) {
+          const cartSummary = await cartService.getCartSummary(token);
+          // Check if subtotal is greater than 0, indicating items exist
+          if (cartSummary && cartSummary.subtotal > 0) {
             navigate('/checkout');
             return;
           }
         } catch (err) {
-          console.error("Failed to fetch cart", err);
+          console.error("Failed to fetch cart summary", err);
+          
+          // Fallback check with getCart if summary fails
+          try {
+            const cartItems = await cartService.getCart(token);
+            if (cartItems && cartItems.length > 0) {
+              navigate('/checkout');
+              return;
+            }
+          } catch (e) {
+            console.error("Failed to fetch cart items", e);
+          }
         }
       }
       

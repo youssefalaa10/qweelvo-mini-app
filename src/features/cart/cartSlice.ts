@@ -20,7 +20,7 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     setCart(state, action: PayloadAction<CartItem[]>) {
-      state.items = action.payload;
+      state.items = Array.isArray(action.payload) ? action.payload : [];
       state.isLoading = false;
       state.error = null;
     },
@@ -72,13 +72,16 @@ export const {
 // Local calculate fallbacks if summary isn't fully loaded
 export const selectCartTotal = (state: { cart: CartState }) => {
   if (state.cart.summary) return state.cart.summary.total;
-  return state.cart.items.reduce((sum, item) => {
-    const modifiersTotal = item.modifiers.reduce((m, mod) => m + mod.price, 0);
+  const items = Array.isArray(state.cart.items) ? state.cart.items : [];
+  return items.reduce((sum, item) => {
+    const modifiersTotal = (item.modifiers || []).reduce((m, mod) => m + mod.price, 0);
     return sum + (item.price + modifiersTotal) * item.quantity;
   }, 0); 
 };
 
-export const selectCartItemCount = (state: { cart: CartState }) =>
-  state.cart.items.reduce((sum, item) => sum + item.quantity, 0);
+export const selectCartItemCount = (state: { cart: CartState }) => {
+  const items = Array.isArray(state.cart.items) ? state.cart.items : [];
+  return items.reduce((sum, item) => sum + item.quantity, 0);
+};
 
 export default cartSlice.reducer;

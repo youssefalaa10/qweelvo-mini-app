@@ -19,10 +19,11 @@ export interface CustomerInfo {
 export interface Branch {
   id: string;
   name: string;
-  nameAr: string;
-  address: string;
-  addressAr: string;
-  isOpen: boolean;
+  nameAr?: string;
+  address?: string;
+  addressAr?: string;
+  location?: string;
+  isOpen?: boolean;
   distance?: string;
 }
 

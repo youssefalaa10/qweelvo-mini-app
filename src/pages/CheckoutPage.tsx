@@ -15,7 +15,8 @@ import {
   clearCart, 
   updateQuantity, 
   removeItem, 
-  setCartSummary 
+  setCartSummary,
+  setCart 
 } from '@/features/cart/cartSlice';
 import { sessionService } from '@/services/sessionService';
 import { cartService } from '@/services/cartService';
@@ -30,34 +31,38 @@ const CheckoutPage = () => {
   const checkout = useAppSelector((s) => s.checkout);
   const items = useAppSelector((s) => s.cart.items);
   const token = useAppSelector((s) => s.session.token);
+  const customerInfo = useAppSelector(s => s.session.customerInfo);
   const sessionInfo = useAppSelector((s) => s.session.info);
   const total = useAppSelector(selectCartTotal);
   const itemCount = useAppSelector(selectCartItemCount);
   const isAr = i18n.language === 'ar';
 
   useEffect(() => {
-    // Sync cart summary and pre-fill customer info if available
+    // Sync cart and pre-fill customer info if available
     const initCheckout = async () => {
       if (!token) return;
       
       try {
-        const summary = await cartService.getCartSummary(token);
+        const [summary, cartItems] = await Promise.all([
+          cartService.getCartSummary(token),
+          cartService.getCart(token)
+        ]);
         dispatch(setCartSummary(summary));
+        dispatch(setCart(cartItems));
       } catch (err) {
-        console.error('Failed to get cart summary', err);
+        console.error('Failed to sync checkout data', err);
       }
 
       // Pre-fill user data
-      const info = useAppSelector(s => s.session.customerInfo);
-      if (info) {
-        if (!checkout.name) dispatch(setName(info.name || ''));
-        if (!checkout.phone) dispatch(setPhone(info.phone || ''));
-        if (!checkout.address) dispatch(setAddress(info.address || ''));
+      if (customerInfo) {
+        if (!checkout.name) dispatch(setName(customerInfo.name || ''));
+        if (!checkout.phone) dispatch(setPhone(customerInfo.phone || ''));
+        if (!checkout.address) dispatch(setAddress(customerInfo.address || ''));
       }
     };
 
     initCheckout();
-  }, [token, dispatch, checkout.name, checkout.phone, checkout.address]);
+  }, [token, dispatch, customerInfo, checkout.name, checkout.phone, checkout.address]);
 
   const isValid = checkout.name.trim() && checkout.phone.trim() && itemCount > 0
     && (checkout.orderType === 'pickup' || checkout.address.trim());
@@ -250,24 +255,24 @@ const CheckoutPage = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-sm">{isAr ? item.nameAr : item.name}</h3>
-                      {item.modifiers.length > 0 && (
+                      <h3 className="font-semibold text-foreground text-sm">{isAr ? item.nameAr || item.name : item.name}</h3>
+                      {item.modifiers && item.modifiers.length > 0 && (
                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {item.modifiers.map((m) => isAr ? m.nameAr : m.name).join(', ')}
+                          {item.modifiers.map((m) => isAr ? m.nameAr || m.name : m.name).join(', ')}
                         </p>
                       )}
                       <p className="text-primary font-bold text-xs mt-1">{itemTotal} {t('common.currency')}</p>
                     </div>
-                    <button onClick={() => handleRemove(item.id, item.productId)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
+                    <button onClick={() => handleRemove(item.id, item.id)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <div className="flex items-center gap-3 mt-2">
-                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1, item.productId)} className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1, item.id)} className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="font-semibold text-foreground text-xs w-5 text-center">{item.quantity}</span>
-                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1, item.productId)} className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover transition-colors">
+                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1, item.id)} className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover transition-colors">
                       <Plus className="w-3 h-3" />
                     </button>
                   </div>

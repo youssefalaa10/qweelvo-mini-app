@@ -11,10 +11,29 @@ export const menuService = {
     const res = await api.get(`/sessions/${token}/menu`, {
       params: { lang }
     });
-    // Assuming the API returns it wrapped in data.categories and data.items
+    
+    // The structure provided: { data: { success: true, data: [ products ] } }
+    let rawItems = res.data?.data?.data || res.data?.data || [];
+    if (!Array.isArray(rawItems) && res.data?.data?.items) rawItems = res.data.data.items;
+
+    // Extract unique categories from products if categories array is missing
+    const products: MenuItem[] = rawItems.map((item: any) => ({
+      ...item,
+      price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+      // Ensure categoryId is set if not already
+      categoryId: item.categoryId || item.category?.id
+    }));
+
+    const categoriesMap = new Map();
+    products.forEach(p => {
+       if ((p as any).category) {
+         categoriesMap.set((p as any).category.id, (p as any).category);
+       }
+    });
+
     return {
-      categories: res.data.data?.categories || [],
-      items: res.data.data?.items || []
+      categories: Array.from(categoriesMap.values()),
+      items: products
     };
   },
 
