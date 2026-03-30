@@ -56,7 +56,7 @@ const EntryPage = () => {
   // Handle routing as a separate effect so we wait for Terms Modal to complete
   useEffect(() => {
     if (sessionStatus === 'valid' && termsAccepted) {
-      const info = useAppSelector.withTypes<{ session: { info: any } }>()(state => state.session.info);
+      const info = useAppSelector(state => state.session.info);
       if (info && info.branchId) {
          navigate('/menu');
       } else {

@@ -12,6 +12,7 @@ import { cartService } from '@/services/cartService';
 import { MenuItem } from '@/types/session';
 import PageHeader from '@/shared/components/PageHeader';
 import PageTransition from '@/shared/components/PageTransition';
+import Stepper from '@/shared/components/Stepper';
 
 const MenuPage = () => {
   const { t, i18n } = useTranslation();
@@ -95,6 +96,7 @@ const MenuPage = () => {
   return (
     <PageTransition>
       <PageHeader title={t('menu.title')} showBack />
+      <Stepper />
       
       {isLoading ? (
         <div className="flex justify-center items-center py-20">

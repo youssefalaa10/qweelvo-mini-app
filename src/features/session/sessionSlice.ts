@@ -8,6 +8,7 @@ interface SessionState {
   info: SessionInfo | null;
   termsAccepted: boolean;
   customerInfo: CustomerInfo | null;
+  hasInitialBranch: boolean;
 }
 
 const initialState: SessionState = {
@@ -17,6 +18,7 @@ const initialState: SessionState = {
   info: null,
   termsAccepted: false,
   customerInfo: null,
+  hasInitialBranch: false,
 };
 
 const sessionSlice = createSlice({
@@ -36,6 +38,11 @@ const sessionSlice = createSlice({
       state.info = action.payload;
       if (action.payload.termsAccepted) {
         state.termsAccepted = true;
+      }
+      if (action.payload.branchId && state.status === 'valid') {
+          // If we are updating session info after initial load, don't overwrite hasInitialBranch.
+      } else if (action.payload.branchId) {
+          state.hasInitialBranch = true;
       }
     },
     setTermsAccepted(state, action: PayloadAction<boolean>) {

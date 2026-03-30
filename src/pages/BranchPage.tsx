@@ -9,6 +9,7 @@ import { sessionService } from '@/services/sessionService';
 import { Branch } from '@/types/session';
 import PageHeader from '@/shared/components/PageHeader';
 import PageTransition from '@/shared/components/PageTransition';
+import Stepper from '@/shared/components/Stepper';
 import { toast } from 'sonner';
 
 const BranchPage = () => {
@@ -56,7 +57,8 @@ const BranchPage = () => {
   return (
     <PageTransition>
       <PageHeader title={t('branch.title')} />
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <Stepper />
+      <div className="max-w-lg mx-auto px-4 py-2">
         <p className="text-muted-foreground mb-4">{t('branch.subtitle')}</p>
         
         {/* Search Location Input */}

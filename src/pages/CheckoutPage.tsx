@@ -21,6 +21,7 @@ import { sessionService } from '@/services/sessionService';
 import { cartService } from '@/services/cartService';
 import PageHeader from '@/shared/components/PageHeader';
 import PageTransition from '@/shared/components/PageTransition';
+import Stepper from '@/shared/components/Stepper';
 
 const CheckoutPage = () => {
   const { t, i18n } = useTranslation();
@@ -47,7 +48,7 @@ const CheckoutPage = () => {
       }
 
       // Pre-fill user data
-      const info = useAppSelector.withTypes<{ session: { customerInfo: any } }>()(s => s.session.customerInfo);
+      const info = useAppSelector(s => s.session.customerInfo);
       if (info) {
         if (!checkout.name) dispatch(setName(info.name || ''));
         if (!checkout.phone) dispatch(setPhone(info.phone || ''));
@@ -137,6 +138,7 @@ const CheckoutPage = () => {
   return (
     <PageTransition>
       <PageHeader title={t('checkout.title')} showBack />
+      <Stepper />
 
       {/* Processing Overlay */}
       {checkout.status === 'processing' && (
