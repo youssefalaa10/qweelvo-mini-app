@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, Loader2 } from 'lucide-react';
+import { menuService } from '@/services/menuService';
+import { cartService } from '@/services/cartService';
+import { MenuItem } from '@/types/session';
+import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { addItem } from '@/features/cart/cartSlice';
 import PageHeader from '@/shared/components/PageHeader';
@@ -13,10 +17,37 @@ const ProductPage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const product = useAppSelector((s) => s.menu.products.find((p) => p.id === id));
-  const isAr = i18n.language === 'ar';
+  const token = useAppSelector(s => s.session.token);
+  
+  const [product, setProduct] = useState<MenuItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string[]>>({});
+  
+  const isAr = i18n.language === 'ar';
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!token || !id) return;
+      setIsLoading(true);
+      try {
+        const data = await menuService.getItemDetails(token, id, i18n.language);
+        setProduct(data);
+      } catch (err) {
+        console.error("Failed to fetch product details", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id, token, i18n.language]);
+
+  if (isLoading) return (
+    <div className="p-20 text-center flex flex-col items-center gap-4">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <p className="text-muted-foreground">{t('shop.loading')}</p>
+    </div>
+  );
 
   if (!product) return <div className="p-8 text-center text-muted-foreground">{t('common.error')}</div>;
 
@@ -29,27 +60,32 @@ const ProductPage = () => {
   };
 
   const modifiersPrice = Object.entries(selectedModifiers).reduce((sum, [groupId, modIds]) => {
-    const group = product.modifierGroups.find((g) => g.id === groupId);
+    const group = (product.modifierGroups || []).find((g) => g.id === groupId);
     if (!group) return sum;
     return sum + modIds.reduce((s, modId) => {
-      const mod = group.options.find((o) => o.id === modId);
+      const mod = (group.options || []).find((o) => o.id === modId);
       return s + (mod?.price || 0);
     }, 0);
   }, 0);
 
   const totalPrice = (product.price + modifiersPrice) * quantity;
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
+    if (!token) return;
+
     const mods = Object.entries(selectedModifiers).flatMap(([groupId, modIds]) => {
-      const group = product.modifierGroups.find((g) => g.id === groupId);
+      const group = (product.modifierGroups || []).find((g) => g.id === groupId);
       if (!group) return [];
       return modIds.map((modId) => {
         const mod = group.options.find((o) => o.id === modId)!;
-        return { name: mod.name, nameAr: mod.nameAr, price: mod.price };
+        return { id: mod.id, name: mod.name, nameAr: mod.nameAr, price: mod.price };
       });
     });
 
+    const tempId = `temp-${Date.now()}`;
+    // Optimistic UI update
     dispatch(addItem({
+      id: tempId,
       productId: product.id,
       name: product.name,
       nameAr: product.nameAr,
@@ -57,7 +93,18 @@ const ProductPage = () => {
       quantity,
       modifiers: mods,
     }));
-    navigate(-1);
+
+    try {
+      await cartService.addItemToCart(token, {
+        itemId: product.id,
+        quantity,
+        modifiers: mods.map(m => ({ id: m.id, quantity: 1 }))
+      });
+      toast.success(isAr ? 'تم الإضافة للسلة' : 'Added to cart');
+      navigate(-1);
+    } catch (err) {
+      toast.error(isAr ? 'فشل إضافة العنصر' : 'Failed to add item');
+    }
   };
 
   return (
@@ -74,7 +121,7 @@ const ProductPage = () => {
           <p className="text-muted-foreground mt-3">{isAr ? product.descriptionAr : product.description}</p>
 
           {/* Modifiers */}
-          {product.modifierGroups.map((group) => (
+          {(product.modifierGroups || []).map((group) => (
             <div key={group.id} className="mt-6">
               <div className="flex items-center gap-2 mb-3">
                 <h3 className="font-semibold text-foreground">{isAr ? group.nameAr : group.name}</h3>

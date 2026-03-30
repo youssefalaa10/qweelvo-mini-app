@@ -35,6 +35,7 @@ const MenuPage = () => {
           menuService.getFullMenu(token, i18n.language),
           cartService.getCart(token)
         ]);
+        console.log('DEBUG: MenuData Loaded:', menuData);
         dispatch(setMenu(menuData));
         dispatch(setCart(cartData));
       } catch (err) {
@@ -49,18 +50,19 @@ const MenuPage = () => {
     }
   }, [token, i18n.language, dispatch, categories.length]);
 
-  const filteredProducts = products.filter((p) => p.categoryId === activeCategory);
+  const filteredProducts = (products || []).filter((p) => p.categoryId === activeCategory);
 
   const handleQuickAdd = async (product: MenuItem) => {
     if (!token) return;
 
     // Pick first options for required groups
-    const defaultModifiers = product.modifierGroups
+    const defaultModifiers = (product.modifierGroups || [])
       .filter((mg) => mg.required)
       .map((mg) => {
-        const firstOpt = mg.options[0];
-        return { id: firstOpt.id, name: firstOpt.name, nameAr: firstOpt.nameAr, price: firstOpt.price };
-      });
+        const firstOpt = mg.options?.[0];
+        if (!firstOpt) return null;
+        return { id: firstOpt.id, name: firstOpt.name, nameAr: firstOpt.nameAr || firstOpt.name, price: firstOpt.price };
+      }).filter(m => m !== null) as any[];
 
     // Optimistic UI update
     const id = `${product.id}-${Date.now()}`;
@@ -74,7 +76,7 @@ const MenuPage = () => {
       modifiers: defaultModifiers,
     }));
 
-    toast.success(isAr ? `تم إضافة ${product.nameAr} للسلة` : `Added ${product.name} to cart`, {
+    toast.success(isAr ? `تم إضافة ${product.nameAr || product.name} للسلة` : `Added ${product.name} to cart`, {
       duration: 1500,
       position: 'top-center',
     });
@@ -119,7 +121,7 @@ const MenuPage = () => {
                       : 'bg-secondary text-secondary-foreground hover:bg-muted'
                   }`}
                 >
-                  {isAr ? cat.nameAr : cat.name}
+                  {isAr ? (cat.nameAr || cat.name) : cat.name}
                 </button>
               ))}
             </div>
@@ -134,8 +136,7 @@ const MenuPage = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col"
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow flex flex-col"
                 >
                   <div className="aspect-[4/3] bg-muted flex items-center justify-center relative overflow-hidden">
                     {product.image ? (
@@ -145,9 +146,14 @@ const MenuPage = () => {
                     )}
                   </div>
                   <div className="p-3 flex flex-col flex-1">
-                    <h3 className="font-semibold text-sm text-foreground line-clamp-1">{isAr ? product.nameAr : product.name}</h3>
-                    <p className="text-primary font-bold text-sm mt-1 mb-2">
+                    <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+                      {isAr ? (product.nameAr || product.name) : product.name}
+                    </h3>
+                    <p className="text-primary font-bold text-sm mt-1">
                       {product.price} {t('common.currency')}
+                    </p>
+                    <p className="text-muted-foreground text-[10px] mt-1 line-clamp-2 min-h-[2.5em] mb-2">
+                       {isAr ? (product.descriptionAr || product.description) : product.description}
                     </p>
                     <div className="mt-auto">
                       <button

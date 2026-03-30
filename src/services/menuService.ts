@@ -12,9 +12,13 @@ export const menuService = {
       params: { lang }
     });
     
+    console.log('DEBUG: Full Menu API Response:', res.data);
+
     // The structure provided: { data: { success: true, data: [ products ] } }
     let rawItems = res.data?.data?.data || res.data?.data || [];
     if (!Array.isArray(rawItems) && res.data?.data?.items) rawItems = res.data.data.items;
+
+    console.log('DEBUG: Raw Items from API:', rawItems);
 
     // Extract unique categories from products if categories array is missing
     const products: MenuItem[] = rawItems.map((item: any) => ({
@@ -31,8 +35,12 @@ export const menuService = {
        }
     });
 
+    const categories = Array.from(categoriesMap.values());
+    console.log('DEBUG: Extracted Categories:', categories);
+    console.log('DEBUG: Processed Products:', products);
+
     return {
-      categories: Array.from(categoriesMap.values()),
+      categories,
       items: products
     };
   },

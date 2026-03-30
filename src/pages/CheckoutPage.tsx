@@ -32,28 +32,28 @@ const CheckoutPage = () => {
   const items = useAppSelector((s) => s.cart.items);
   const token = useAppSelector((s) => s.session.token);
   const customerInfo = useAppSelector(s => s.session.customerInfo);
-  const sessionInfo = useAppSelector((s) => s.session.info);
   const total = useAppSelector(selectCartTotal);
   const itemCount = useAppSelector(selectCartItemCount);
   const isAr = i18n.language === 'ar';
 
   useEffect(() => {
-    // Sync cart and pre-fill customer info if available
     const initCheckout = async () => {
       if (!token) return;
       
       try {
-        const [summary, cartItems] = await Promise.all([
+        const [summary, cartData] = await Promise.all([
           cartService.getCartSummary(token),
           cartService.getCart(token)
         ]);
         dispatch(setCartSummary(summary));
-        dispatch(setCart(cartItems));
+        
+        const itemsList = (cartData as any)?.items || (Array.isArray(cartData) ? cartData : []);
+        console.log('DEBUG: Checkout Sync Items:', itemsList);
+        dispatch(setCart(itemsList));
       } catch (err) {
         console.error('Failed to sync checkout data', err);
       }
 
-      // Pre-fill user data
       if (customerInfo) {
         if (!checkout.name) dispatch(setName(customerInfo.name || ''));
         if (!checkout.phone) dispatch(setPhone(customerInfo.phone || ''));
@@ -78,17 +78,13 @@ const CheckoutPage = () => {
     dispatch(setCheckoutStatus('processing'));
 
     try {
-      // 1. Update customer info based on order type
       await sessionService.updateCustomerInfo({
         name: checkout.name,
         phone: checkout.phone,
         address: checkout.orderType === 'delivery' ? checkout.address : undefined,
       });
 
-      // 2. Validate Cart
       await cartService.validateCart(token);
-
-      // 3. Complete Session
       await sessionService.completeSession();
 
       const orderNum = `QW-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -105,36 +101,47 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleUpdateQuantity = async (id: string, newQuantity: number, itemId?: string) => {
+  const handleUpdateQuantity = async (id: string, newQuantity: number, backendId?: string) => {
     if (!token) return;
     
-    // Optimistic
+    // id is the one used in redux, backendId is the one from mongo (_id)
     dispatch(updateQuantity({ id, quantity: newQuantity }));
 
     try {
-      if (newQuantity <= 0 && itemId) {
-         await cartService.removeCartItem(token, itemId);
-      } else if (itemId) {
-         await cartService.updateCartItem(token, itemId, { quantity: newQuantity });
+      if (newQuantity <= 0 && backendId) {
+         await cartService.removeCartItem(token, backendId);
+      } else if (backendId) {
+         await cartService.updateCartItem(token, backendId, { quantity: newQuantity });
       }
       
-      // Update summary
-      const summary = await cartService.getCartSummary(token);
+      const [summary, cartData] = await Promise.all([
+         cartService.getCartSummary(token),
+         cartService.getCart(token)
+      ]);
       dispatch(setCartSummary(summary));
+      const itemsList = (cartData as any)?.items || (Array.isArray(cartData) ? cartData : []);
+      dispatch(setCart(itemsList));
     } catch (err) {
+      console.error('Update failed', err);
       toast.error(isAr ? 'فشل التحديث' : 'Update failed');
     }
   };
 
-  const handleRemove = async (id: string, itemId?: string) => {
+  const handleRemove = async (id: string, backendId?: string) => {
     if (!token) return;
     dispatch(removeItem(id));
-    if (itemId) {
+    if (backendId) {
       try {
-        await cartService.removeCartItem(token, itemId);
-        const summary = await cartService.getCartSummary(token);
+        await cartService.removeCartItem(token, backendId);
+        const [summary, cartData] = await Promise.all([
+           cartService.getCartSummary(token),
+           cartService.getCart(token)
+        ]);
         dispatch(setCartSummary(summary));
+        const itemsList = (cartData as any)?.items || (Array.isArray(cartData) ? cartData : []);
+        dispatch(setCart(itemsList));
       } catch (err) {
+        console.error('Remove failed', err);
         toast.error(isAr ? 'فشل في إزالة العنصر' : 'Failed to remove item');
       }
     }
@@ -145,7 +152,6 @@ const CheckoutPage = () => {
       <PageHeader title={t('checkout.title')} showBack />
       <Stepper />
 
-      {/* Processing Overlay */}
       {checkout.status === 'processing' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[100] bg-foreground/50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-card rounded-2xl p-8 text-center shadow-xl">
@@ -156,7 +162,6 @@ const CheckoutPage = () => {
       )}
 
       <div className="max-w-lg mx-auto px-4 py-4 pb-28">
-        {/* User Info */}
         <section className="bg-card rounded-xl border border-border p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-4">{t('checkout.userInfo')}</h3>
           <div className="space-y-3">
@@ -183,7 +188,6 @@ const CheckoutPage = () => {
           </div>
         </section>
 
-        {/* Order Type */}
         <section className="bg-card rounded-xl border border-border p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-4">{t('checkout.orderType')}</h3>
           <div className="grid grid-cols-2 gap-3">
@@ -204,7 +208,6 @@ const CheckoutPage = () => {
           </div>
         </section>
 
-        {/* Address */}
         {checkout.orderType === 'delivery' && (
           <motion.section initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-card rounded-xl border border-border p-4 mb-4">
             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><MapPin className="w-4 h-4" />{t('checkout.address')}</h3>
@@ -217,7 +220,6 @@ const CheckoutPage = () => {
           </motion.section>
         )}
 
-        {/* Payment */}
         <section className="bg-card rounded-xl border border-border p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-4">{t('checkout.payment')}</h3>
           <div className="space-y-2">
@@ -238,16 +240,19 @@ const CheckoutPage = () => {
           </div>
         </section>
 
-        {/* Order Summary */}
         <section className="bg-card rounded-xl border border-border p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-3">{t('checkout.orderSummary')}</h3>
           
           <div className="space-y-3 mb-4">
             {items.map((item, i) => {
-              const itemTotal = (item.price + item.modifiers.reduce((s, m) => s + m.price, 0)) * item.quantity;
+              const displayTotal = (item as any).totalPrice || ((item.price || 0) * item.quantity);
+              // Use _id for backend, fallback to id for redux
+              const reduxId = item.id || (item as any).itemId || (item as any)._id;
+              const mongoId = (item as any)._id;
+
               return (
                 <motion.div
-                  key={item.id}
+                  key={mongoId || reduxId}
                   initial={{ opacity: 0, x: isAr ? 10 : -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
@@ -255,24 +260,29 @@ const CheckoutPage = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-sm">{isAr ? item.nameAr || item.name : item.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-primary font-bold">{item.quantity}x</span>
+                        <h3 className="font-semibold text-foreground text-sm">
+                           {item.name}
+                        </h3>
+                      </div>
                       {item.modifiers && item.modifiers.length > 0 && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {item.modifiers.map((m) => isAr ? m.nameAr || m.name : m.name).join(', ')}
+                        <p className="text-[10px] text-muted-foreground mt-0.5 ml-6 rtl:mr-6 rtl:ml-0">
+                          {item.modifiers.map((m) => m.name).join(', ')}
                         </p>
                       )}
-                      <p className="text-primary font-bold text-xs mt-1">{itemTotal} {t('common.currency')}</p>
+                      <p className="text-primary font-bold text-xs mt-1 ml-6 rtl:mr-6 rtl:ml-0">{displayTotal} {t('common.currency')}</p>
                     </div>
-                    <button onClick={() => handleRemove(item.id, item.id)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
+                    <button onClick={() => handleRemove(reduxId, mongoId)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1, item.id)} className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+                  <div className="flex items-center gap-3 mt-2 ml-6 rtl:mr-6 rtl:ml-0">
+                    <button onClick={() => handleUpdateQuantity(reduxId, item.quantity - 1, mongoId)} className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="font-semibold text-foreground text-xs w-5 text-center">{item.quantity}</span>
-                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1, item.id)} className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover transition-colors">
+                    <button onClick={() => handleUpdateQuantity(reduxId, item.quantity + 1, mongoId)} className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover transition-colors">
                       <Plus className="w-3 h-3" />
                     </button>
                   </div>
@@ -282,13 +292,12 @@ const CheckoutPage = () => {
           </div>
 
           <div className="border-t border-border pt-3 flex justify-between">
-            <span className="font-semibold text-foreground">{t('cart.total')}</span>
-            <span className="font-bold text-primary text-lg">{total} {t('common.currency')}</span>
+            <span className="font-semibold text-foreground text-lg">{t('cart.total')}</span>
+            <span className="font-bold text-primary text-xl">{total} {t('common.currency')}</span>
           </div>
         </section>
       </div>
 
-      {/* CTA */}
       <div className="sticky-bottom">
         <div className="max-w-lg mx-auto flex flex-col gap-2">
           <button
