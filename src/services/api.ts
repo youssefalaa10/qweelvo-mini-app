@@ -2,6 +2,7 @@ import axios from 'axios';
 import { store } from '@/app/store';
 
 const api = axios.create({
+  //base
   baseURL: 'http://qweelvo-order/api/v1',
   headers: {
     'Content-Type': 'application/json',
