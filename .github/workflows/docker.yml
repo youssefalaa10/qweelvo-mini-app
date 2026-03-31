@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/qweelvo-com/qweelvo-mini-app # test
+  IMAGE_NAME: ghcr.io/youssefalaa10/qweelvo-mini-app # test
 
 jobs:
   build-and-push:
