@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qweelvo-mini-app
+  namespace: core
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - order.qweelvo.com
+      secretName: cloudflare-origin-cert
+  rules:
+    - host: order.qweelvo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: qweelvo-mini-app
+                port:
+                  number: 80
