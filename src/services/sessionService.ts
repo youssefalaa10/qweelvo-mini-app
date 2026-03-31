@@ -4,6 +4,7 @@ import { SessionInfo, CustomerInfo, Branch } from '@/types/session';
 export const sessionService = {
   validateSession: async (token: string): Promise<{ token: string }> => {
     const res = await api.get(`/sessions/validate/${token}`);
+    console.log('new session validation');
     return res.data.data;
   },
   
