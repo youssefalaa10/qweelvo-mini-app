@@ -14,9 +14,11 @@ spec:
         app: qweelvo-mini-app
     spec:
       serviceAccountName: qweelvo-mini-app-sa
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: qweelvo-mini-app
-          image: ghcr.io/youssefalaa10/qweelvo-mini-app:sha-30c2c14
+          image: ghcr.io/youssefalaa10/qweelvo-mini-app:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -24,7 +26,15 @@ spec:
             httpGet:
               path: /
               port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /
               port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 2
+            failureThreshold: 3
